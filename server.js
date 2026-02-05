@@ -1,10 +1,14 @@
+//options are set in environment variables or default values are used
+//SMTP_HOST, MAIL_FROM, PORT (should be 4000 which is default)
+
 const express = require('express');
 const nodemailer = require('nodemailer');
 const cors = require('cors');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '25mb' }));
+app.use(express.urlencoded({ limit: '25mb', extended: true }));
 
 app.get('/', (_req, res) => {
   res.send('Backend is running');
@@ -21,16 +25,25 @@ const transporter = nodemailer.createTransport({
 });
 
 app.post('/api/send-email', async (req, res) => {
-  const { to, subject, text } = req.body;
+  const { to, subject, text, attachments } = req.body;
 
   try {
     const info = await transporter.sendMail({
-      from: process.env.MAIL_FROM || process.env.SMTP_USER,
+      from: process.env.MAIL_FROM,
       to,
       subject,
       text,
     });
 
+    // Add attachments if they exist
+    if (attachments && Array.isArray(attachments) && attachments.length > 0) {
+      mailOptions.attachments = attachments.map(attachment => ({
+        filename: attachment.filename,
+        content: attachment.content,
+        encoding: 'base64'
+      }));
+    }
+    
     console.log('Email sent:', info.messageId);
     res.json({ success: true });
   } catch (error) {
