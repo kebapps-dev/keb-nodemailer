@@ -17,7 +17,7 @@ app.get('/', (_req, res) => {
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'kebamerica-com.mail.protection.outlook.com',
   port: 25,
-  secure: false, // true only for 465
+  secure: false,
   tls: {
     rejectUnauthorized: false
   },
@@ -28,13 +28,13 @@ app.post('/api/send-email', async (req, res) => {
   const { to, subject, text, attachments } = req.body;
 
   try {
-    const info = await transporter.sendMail({
+    const mailOptions = {
       from: process.env.MAIL_FROM,
       to,
       subject,
       text,
-    });
-
+    };
+    
     // Add attachments if they exist
     if (attachments && Array.isArray(attachments) && attachments.length > 0) {
       mailOptions.attachments = attachments.map(attachment => ({
@@ -44,7 +44,9 @@ app.post('/api/send-email', async (req, res) => {
       }));
     }
 
-    console.log('Email sent:', info.messageId);
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log('Email sent:', info);
     res.json({ success: true });
   } catch (error) {
     console.error('SMTP error:', error);
