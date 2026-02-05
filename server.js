@@ -1,4 +1,4 @@
-//options are set in environment variables or default values used
+//options are set in environment variables or default values are used
 //SMTP_HOST, MAIL_FROM, PORT (should be 4000 which is default)
 
 const express = require('express');
